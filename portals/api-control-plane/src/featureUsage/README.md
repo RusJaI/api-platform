@@ -400,6 +400,7 @@ search and view toggles report nothing.
 |              | `security.test-api-key-generate-click`                                                                           | Get Test API Key / Issue a new key                    | `artifact_kind`                                                              |
 |              | `security.api-key-revoke-click`                                                                                  | revoke confirm                                        | `artifact_kind`                                                              |
 | Policies     | `policies.<capability>-attach` (10 codes)                                                                        | Save changes, once per newly attached policy          | `artifact_kind`?, `policy_scope`?, `policy_name`                             |
+|              | `policies.api-policies-save-click`                                                                               | Save changes, every save (REST or GraphQL)            | `artifact_kind`, `policies_added`, `policies_removed`, `policies_updated`    |
 |              | `policies.policy-hub-browse`                                                                                     | Policy Hub catalogue shown                            | `artifact_kind`?                                                             |
 | Deploy       | `lifecycle.api-deploy-click`                                                                                     | Deploy                                                | `artifact_kind`, `gateway_type`, `gateway_hosting`?                          |
 |              | `lifecycle.deployment-undeploy-click` / `-redeploy-click` / `-restore-click` / `-delete-click`                   | Stop, Redeploy, Restore, delete                       | `artifact_kind`                                                              |
@@ -435,7 +436,9 @@ and where they drop off; the endpoint features show whether the call worked.
 `trackPolicyAttachment` (`policies.ts`) maps the policy name to its capability
 feature (`api-key-auth` → `apip.policies.client-authentication-attach`). Only the WSO2
 policies bundled with the gateway are mapped; a custom, AI or MCP policy is not
-reported, because its name could be the customer's own text.
+reported, because its name could be the customer's own text. Every save still
+sends `policies.api-policies-save-click`, with no policy names, so a save of
+only unmapped policies, removals or reorders is counted too.
 
 **Not tracked, deliberately:** navigation (open an API, breadcrumbs, the
 sidebar), search boxes, list/grid toggles, copy buttons for a URL or key,

@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { newlyAttachedPolicies } from './newlyAttachedPolicies';
+import { newlyAttachedPolicies, policySaveChanges } from './newlyAttachedPolicies';
 
 const p = (name: string, version = 'v1') => ({ name, version });
 
@@ -135,5 +135,56 @@ describe('newlyAttachedPolicies', () => {
     expect(newlyAttachedPolicies({ apiPolicies: [] }, { apiPolicies: [p('cors')] })).toEqual([
       { name: 'cors', scope: 'api' },
     ]);
+  });
+});
+
+describe('policySaveChanges', () => {
+  const none = { policies_added: 'no', policies_removed: 'no', policies_updated: 'no' };
+
+  it('reports nothing for an unchanged save', () => {
+    const saved = {
+      apiPolicies: [p('cors')],
+      operations: [{ method: 'GET', path: '/orders', policies: [p('basic-ratelimit')] }],
+    };
+    expect(policySaveChanges(saved, saved)).toEqual(none);
+  });
+
+  it('reports a policy attached at API level or on a resource', () => {
+    expect(policySaveChanges({ apiPolicies: [] }, { apiPolicies: [p('aws-bedrock-guardrail')] })).toEqual({
+      ...none,
+      policies_added: 'yes',
+    });
+    expect(
+      policySaveChanges(
+        { apiPolicies: [], operations: [{ method: 'GET', path: '/orders', policies: [] }] },
+        { apiPolicies: [], operations: [{ method: 'GET', path: '/orders', policies: [p('cors')] }] },
+      ),
+    ).toEqual({ ...none, policies_added: 'yes' });
+  });
+
+  it('reports a removal without calling the policies left behind updated', () => {
+    expect(
+      policySaveChanges({ apiPolicies: [p('cors'), p('api-key-auth')] }, { apiPolicies: [p('api-key-auth')] }),
+    ).toEqual({ ...none, policies_removed: 'yes' });
+  });
+
+  it('reports a reorder or a parameter change of a kept policy as updated', () => {
+    expect(
+      policySaveChanges({ apiPolicies: [p('cors'), p('api-key-auth')] }, { apiPolicies: [p('api-key-auth'), p('cors')] }),
+    ).toEqual({ ...none, policies_updated: 'yes' });
+    const reconfigured = { apiPolicies: [{ ...p('cors'), params: { a: 1 } }] };
+    expect(policySaveChanges({ apiPolicies: [p('cors')] }, reconfigured)).toEqual({
+      ...none,
+      policies_updated: 'yes',
+    });
+  });
+
+  it('reports each kind once in a save that does all three', () => {
+    expect(
+      policySaveChanges(
+        { apiPolicies: [p('cors'), p('api-key-auth'), p('set-headers')] },
+        { apiPolicies: [p('api-key-auth'), p('cors'), p('basic-auth')] },
+      ),
+    ).toEqual({ policies_added: 'yes', policies_removed: 'yes', policies_updated: 'yes' });
   });
 });

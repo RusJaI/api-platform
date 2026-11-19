@@ -34,6 +34,7 @@ import { ReadOnlyPoliciesNotice } from '../../develop/policies/ReadOnlyPoliciesN
 import { AvailablePoliciesPanel } from '../../develop/policies/AvailablePoliciesPanel';
 import {
   newlyAttachedPolicies,
+  policySaveChanges,
   type PolicyAttachments,
 } from '../../develop/policies/newlyAttachedPolicies';
 import { getDraggedPolicy } from '../../develop/policies/policyDnd';
@@ -176,6 +177,12 @@ export function GraphqlPolicyPanel({ api }: { api: GraphQLApiDetail }) {
     // otherwise be issued if it were ever missing.
     if (!graphqlApiId) return;
     const submitted = { apiPolicies };
+    // Every save, whatever it changes; the capability features below count only
+    // the bundled policies it newly attaches.
+    trackFeature('apip.policies.api-policies-save-click', {
+      artifact_kind: 'graphql-api',
+      ...policySaveChanges(lastSubmitted.current, submitted),
+    });
     for (const { name } of newlyAttachedPolicies(lastSubmitted.current, submitted)) {
       trackPolicyAttachment(trackFeature, name, {
         artifact_kind: 'graphql-api',

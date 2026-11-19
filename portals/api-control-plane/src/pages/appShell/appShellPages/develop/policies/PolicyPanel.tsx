@@ -50,7 +50,11 @@ import {
   toEditableOperations,
   withPolicyEdits,
 } from '../../apis/utils/developEdit';
-import { newlyAttachedPolicies, type PolicyAttachments } from './newlyAttachedPolicies';
+import {
+  newlyAttachedPolicies,
+  policySaveChanges,
+  type PolicyAttachments,
+} from './newlyAttachedPolicies';
 import { countPolicyChanges } from './policyChanges';
 import { getDraggedPolicy, type PolicyScope, scopeId } from './policyDnd';
 import { PolicyConfigDrawer, type PolicyRef } from './PolicyConfigDrawer';
@@ -350,6 +354,12 @@ export function PolicyPanel({ api }: { api: RestApi }) {
     // otherwise be issued against the collection.
     if (!restApiId) return;
     const submitted = { apiPolicies, operations };
+    // Every save, whatever it changes; the capability features below count only
+    // the bundled policies it newly attaches.
+    trackFeature('apip.policies.api-policies-save-click', {
+      artifact_kind: 'rest-api',
+      ...policySaveChanges(lastSubmitted.current, submitted),
+    });
     for (const { name, scope: policyScope } of newlyAttachedPolicies(
       lastSubmitted.current,
       submitted,

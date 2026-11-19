@@ -81,3 +81,59 @@ export function newlyAttachedPolicies(
 
   return attached;
 }
+
+/** What a save changed, for the policies save feature: each a yes/no. */
+export type PolicySaveChanges = {
+  policies_added: 'yes' | 'no';
+  policies_removed: 'yes' | 'no';
+  policies_updated: 'yes' | 'no';
+};
+
+const yesNo = (value: boolean): 'yes' | 'no' => (value ? 'yes' : 'no');
+
+/**
+ * Whether the policies kept in one list (present before and after, by name)
+ * moved or changed parameters: the kept ones are compared in order, whole.
+ */
+const keptPoliciesChanged = (
+  before: readonly NamedPolicy[],
+  after: readonly NamedPolicy[],
+): boolean => {
+  const names = (list: readonly NamedPolicy[]) => new Set(list.map((policy) => policy.name));
+  const inAfter = names(after);
+  const inBefore = names(before);
+  const kept = (list: readonly NamedPolicy[], other: Set<string>) =>
+    JSON.stringify(list.filter((policy) => other.has(policy.name)));
+  return kept(before, inAfter) !== kept(after, inBefore);
+};
+
+/**
+ * What a save of the policy panel changes, compared with what was last saved:
+ * a policy attached, a policy removed, and a kept policy reordered or
+ * reconfigured. Lists are matched as {@link newlyAttachedPolicies} matches them
+ * (API level with API level, an operation with the same method and path).
+ */
+export function policySaveChanges(
+  before: PolicyAttachments,
+  after: PolicyAttachments,
+): PolicySaveChanges {
+  const listsOf = (attachments: PolicyAttachments) => {
+    const lists = new Map<string, readonly NamedPolicy[]>([['', attachments.apiPolicies]]);
+    for (const operation of attachments.operations ?? []) {
+      const key = operationKey(operation);
+      lists.set(key, [...(lists.get(key) ?? []), ...(operation.policies ?? [])]);
+    }
+    return lists;
+  };
+  const beforeLists = listsOf(before);
+  const afterLists = listsOf(after);
+  const updated = [...new Set([...beforeLists.keys(), ...afterLists.keys()])].some((key) =>
+    keptPoliciesChanged(beforeLists.get(key) ?? [], afterLists.get(key) ?? []),
+  );
+
+  return {
+    policies_added: yesNo(newlyAttachedPolicies(before, after).length > 0),
+    policies_removed: yesNo(newlyAttachedPolicies(after, before).length > 0),
+    policies_updated: yesNo(updated),
+  };
+}

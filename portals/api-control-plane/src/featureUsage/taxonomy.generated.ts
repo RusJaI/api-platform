@@ -2112,6 +2112,60 @@ export const API_PLATFORM_TAXONOMY: FeatureTaxonomy = {
       },
     },
     {
+      code: 'apip.policies.api-policies-save-click',
+      name: 'API Policies Save Click',
+      description:
+        'Save changes to the policies attached to an API, at API level or on its resources. Emitted by the console, once per save, whichever policies the save involves.',
+      category: 'policies',
+      tier: 'core',
+      status: 'stable',
+      availability: { introduced_in: '0.9.0' },
+      tracking: {
+        event_name: 'apip.policies.api-policies-save-click',
+        event_category: 'engagement',
+        platforms: ['web'],
+        dimensions: [
+          {
+            name: 'portal',
+            type: 'enum',
+            values: ['api-control-plane'],
+            required: true,
+            description: 'The API Platform UI the action was taken in.',
+          },
+          {
+            name: 'artifact_kind',
+            type: 'enum',
+            values: ['rest-api', 'graphql-api'],
+            required: true,
+            description: 'The kind of API whose policies were saved.',
+          },
+          {
+            name: 'policies_added',
+            type: 'enum',
+            values: ['yes', 'no'],
+            required: true,
+            description:
+              'Whether the save attaches a policy the API did not have, at that level or resource.',
+          },
+          {
+            name: 'policies_removed',
+            type: 'enum',
+            values: ['yes', 'no'],
+            required: true,
+            description: 'Whether the save removes an attached policy.',
+          },
+          {
+            name: 'policies_updated',
+            type: 'enum',
+            values: ['yes', 'no'],
+            required: true,
+            description: 'Whether the save reorders or reconfigures a policy that stays attached.',
+          },
+        ],
+        aggregations: [{ type: 'count', label: 'API Policies Save Click' }],
+      },
+    },
+    {
       code: 'apip.policies.custom-policy',
       name: 'Custom Policy',
       description: 'Sync a custom gateway policy to the organization or delete it.',
@@ -6075,6 +6129,18 @@ export const CONSOLE_FEATURES = {
         ],
       },
       policy_scope: { required: false, values: ['api', 'operation'] },
+    },
+  },
+  'apip.policies.api-policies-save-click': {
+    name: 'API Policies Save Click',
+    category: 'policies',
+    tier: 'core',
+    eventCategory: 'engagement',
+    dimensions: {
+      artifact_kind: { required: true, values: ['rest-api', 'graphql-api'] },
+      policies_added: { required: true, values: ['yes', 'no'] },
+      policies_removed: { required: true, values: ['yes', 'no'] },
+      policies_updated: { required: true, values: ['yes', 'no'] },
     },
   },
   'apip.policies.policy-hub-browse': {
