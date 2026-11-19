@@ -4759,6 +4759,31 @@ export const API_PLATFORM_TAXONOMY: FeatureTaxonomy = {
       },
     },
     {
+      code: 'apip.admin.landing-page-open',
+      name: 'API Management Landing Page Open',
+      description:
+        'Land on the API Management landing page (the organization home every sign-in redirects to at /api-management), which marks the user and organization as API Management users. Emitted by the console, once per visit.',
+      category: 'admin',
+      tier: 'core',
+      status: 'stable',
+      availability: { introduced_in: '0.9.0' },
+      tracking: {
+        event_name: 'apip.admin.landing-page-open',
+        event_category: 'discovery',
+        platforms: ['web'],
+        dimensions: [
+          {
+            name: 'portal',
+            type: 'enum',
+            values: ['api-control-plane'],
+            required: true,
+            description: 'The API Platform UI the action was taken in.',
+          },
+        ],
+        aggregations: [{ type: 'count', label: 'API Management Landing Page Open' }],
+      },
+    },
+    {
       code: 'apip.ai-gateway.ai-guardrails',
       name: 'AI Guardrails',
       description:
@@ -5831,6 +5856,13 @@ export const CONSOLE_FEATURES = {
     category: 'admin',
     tier: 'core',
     eventCategory: 'lifecycle',
+    dimensions: {},
+  },
+  'apip.admin.landing-page-open': {
+    name: 'API Management Landing Page Open',
+    category: 'admin',
+    tier: 'core',
+    eventCategory: 'discovery',
     dimensions: {},
   },
 } as const;
