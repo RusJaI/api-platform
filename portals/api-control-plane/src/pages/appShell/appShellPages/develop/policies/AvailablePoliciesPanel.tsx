@@ -356,6 +356,7 @@ export function AvailablePoliciesPanel({
             component="a"
             endIcon={<ExternalLink size={14} />}
             href={runtimeConfig.policyHubWebUrl}
+            onClick={() => trackFeature('apip.policies.policy-hub-open', { artifact_kind: artifactKind })}
             rel="noreferrer"
             size="small"
             target="_blank"

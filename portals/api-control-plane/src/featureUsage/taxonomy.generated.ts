@@ -2222,6 +2222,45 @@ export const API_PLATFORM_TAXONOMY: FeatureTaxonomy = {
       },
     },
     {
+      code: 'apip.policies.policy-hub-open',
+      name: 'Policy Hub Open',
+      description:
+        "Open the Policy Hub website from an API's policies page. Emitted by the console.",
+      category: 'policies',
+      tier: 'core',
+      status: 'stable',
+      availability: { introduced_in: '0.9.0' },
+      tracking: {
+        event_name: 'apip.policies.policy-hub-open',
+        event_category: 'engagement',
+        platforms: ['web'],
+        dimensions: [
+          {
+            name: 'portal',
+            type: 'enum',
+            values: ['api-control-plane'],
+            required: true,
+            description: 'The API Platform UI the action was taken in.',
+          },
+          {
+            name: 'artifact_kind',
+            type: 'enum',
+            values: [
+              'rest-api',
+              'graphql-api',
+              'llm-provider',
+              'llm-proxy',
+              'mcp-proxy',
+              'agent-proxy',
+            ],
+            required: false,
+            description: 'The kind of API whose policies page the Policy Hub was opened from.',
+          },
+        ],
+        aggregations: [{ type: 'count', label: 'Policy Hub Open' }],
+      },
+    },
+    {
       code: 'apip.policies.gateway-policies-view',
       name: 'Gateway Policies View',
       description: 'View the policies available on a gateway.',
@@ -6148,6 +6187,25 @@ export const CONSOLE_FEATURES = {
     category: 'policies',
     tier: 'core',
     eventCategory: 'discovery',
+    dimensions: {
+      artifact_kind: {
+        required: false,
+        values: [
+          'rest-api',
+          'graphql-api',
+          'llm-provider',
+          'llm-proxy',
+          'mcp-proxy',
+          'agent-proxy',
+        ],
+      },
+    },
+  },
+  'apip.policies.policy-hub-open': {
+    name: 'Policy Hub Open',
+    category: 'policies',
+    tier: 'core',
+    eventCategory: 'engagement',
     dimensions: {
       artifact_kind: {
         required: false,
